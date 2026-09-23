@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ coin.name }} ({{ coin.symbol }}) Price & Analytics - CryptoLens</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <a href="/" class="sidebar-brand">
+      <div class="brand-icon">₿</div>
+      <div class="brand-info">
+        <div class="brand-title">Crypto<span>Lens</span></div>
+        <div class="brand-subtitle">Track · Analyze · Grow</div>
+      </div>
+    </a>
+
+    <ul class="sidebar-menu">
+      <li>
+        <a href="/" class="nav-link">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+          <span class="nav-text">Dashboard</span>
+        </a>
+      </li>
+      <li>
+        <a href="/markets" class="nav-link">
+          <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+          <span class="nav-text">Markets</span>
+        </a>
+      </li>
+      <li>
+        <a href="/" class="nav-link">
+          <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+          <span class="nav-text">Watchlist</span>
+        </a>
+      </li>
+      <li>
+        <a href="/coin/{{ coin.symbol }}" class="nav-link active">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="20" x2="12" y2="10"></line><line x1="18" y1="20" x2="18" y2="4"></line><line x1="6" y1="20" x2="6" y2="16"></line></svg>
+          <span class="nav-text">Analytics</span>
+        </a>
+      </li>
+    </ul>
+
+    <div class="sidebar-status-card">
+      <div class="status-header">
+        <span class="pulse-dot"></span>
+        <span>Data Source</span>
+      </div>
+      <div class="status-source" style="color: #10b981;">Scraper Online</div>
+      <div style="font-size: 11px; color: var(--silver-light);">CoinMarketCap</div>
+    </div>
+  </aside>
+
+  <!-- MAIN WRAPPER -->
+  <div class="main-wrapper">
+    <header class="app-header">
+      <div class="header-left">
+        <a href="/markets" class="btn-outline" style="text-decoration: none; display: flex; align-items: center; gap: 6px;">
+          ← Back to Markets
+        </a>
+      </div>
+
+      <div class="header-right">
+        <button class="btn-gold" onclick="openAlertModal()">+ Set Alert</button>
+        <button class="btn-outline" onclick="toggleWatchlist('{{ coin.symbol }}')">
+          ★ {% if is_starred %}In Watchlist{% else %}Add to Watchlist{% endif %}
+        </button>
+      </div>
+    </header>
+
+    <main class="content-area">
+      <!-- Coin Title Header Card -->
+      <div class="dashboard-card" style="margin-bottom: 20px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div class="coin-avatar" style="width: 44px; height: 44px; font-size: 16px; background-color: {{ coin.color }};">
+              {{ coin.symbol[:3] }}
+            </div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <h1 style="font-size: 24px; font-weight: 800; color: var(--text-white);">{{ coin.name }}</h1>
+                <span style="font-size: 14px; color: var(--silver-primary); font-weight: 600;">{{ coin.symbol }}</span>
+                <span class="badge" style="background-color: var(--bg-input); color: var(--gold-primary); border: 1px solid var(--border-gold);">
+                  Rank #{{ coin.rank }}
+                </span>
+              </div>
+              <div style="display: flex; align-items: baseline; gap: 12px; margin-top: 4px;">
+                <span style="font-size: 28px; font-weight: 800; color: var(--text-white);">${{ "{:,.2f}".format(coin.price) if coin.price >= 1 else "{:.4f}".format(coin.price) }}</span>
+                <span class="hero-price-badge {% if coin.change_24h >= 0 %}change-up{% else %}change-down{% endif %}" style="background: {% if coin.change_24h >= 0 %}var(--green-bg){% else %}var(--red-bg){% endif %};">
+                  {% if coin.change_24h >= 0 %}▲ +{% else %}▼ {% endif %}{{ "{:.2f}".format(coin.change_24h) }}% (24h)
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Timeframe Selector Buttons -->
+          <div class="timeframe-group">
+            <button class="tf-btn" onclick="switchDetailTimeframe('1h', this)">1H</button>
+            <button class="tf-btn" onclick="switchDetailTimeframe('6h', this)">6H</button>
+            <button class="tf-btn" onclick="switchDetailTimeframe('12h', this)">12H</button>
+            <button class="tf-btn active" onclick="switchDetailTimeframe('24h', this)">24H</button>
+            <button class="tf-btn" onclick="switchDetailTimeframe('7d', this)">7D</button>
+            <button class="tf-btn" onclick="switchDetailTimeframe('30d', this)">30D</button>
+            <button class="tf-btn" onclick="switchDetailTimeframe('90d', this)">90D</button>
+            <button class="tf-btn" onclick="switchDetailTimeframe('1y', this)">1Y</button>
+          </div>
+        </div>
+
+        <!-- High Resolution Main Chart -->
+        <div style="height: 340px; margin-top: 24px;">
+          <canvas id="coinMainChartCanvas"></canvas>
+        </div>
+      </div>
+
+      <!-- Deep Metrics Grid -->
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px;">
+        <div class="stat-card">
+          <div class="stat-title">Market Capitalization</div>
+          <div class="stat-value">${{ "{:,.0f}".format(coin.market_cap) }}</div>
+          <div class="stat-bottom" style="margin-top: 8px;">
+            <span style="font-size: 11px; color: var(--silver-primary);">Global Rank #{{ coin.rank }}</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-title">24h Trading Volume</div>
+          <div class="stat-value">${{ "{:,.0f}".format(coin.volume_24h) }}</div>
+          <div class="stat-bottom" style="margin-top: 8px;">
+            <span style="font-size: 11px; color: var(--silver-primary);">
+              Vol/MCap: {{ "{:.2f}".format((coin.volume_24h / coin.market_cap * 100) if coin.market_cap > 0 else 0) }}%
+            </span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-title">Circulating Supply</div>
+          <div class="stat-value">{{ coin.circulating_supply }}</div>
+          <div class="stat-bottom" style="margin-top: 8px;">
+            <span style="font-size: 11px; color: var(--gold-primary);">Verified On-Chain</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-title">7-Day Change</div>
+          <div class="stat-value {% if coin.change_7d >= 0 %}change-up{% else %}change-down{% endif %}">
+            {% if coin.change_7d >= 0 %}+{% endif %}{{ "{:.2f}".format(coin.change_7d) }}%
+          </div>
+          <div class="stat-bottom" style="margin-top: 8px;">
+            <span style="font-size: 11px; color: var(--silver-primary);">1h: {{ "{:.2f}".format(coin.change_1h) }}%</span>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Fixed Status Bar -->
+    <footer class="status-bar-fixed">
+      <div class="status-bar-left">
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span class="pulse-dot"></span>
+          <span id="scraperStatusText" style="color: #10b981; font-weight: 600;">Selenium Scraper: Running</span>
+        </div>
+        <div>Last updated: <span id="lastUpdatedTime">{{ coin.timestamp }}</span></div>
+      </div>
+      <div class="status-bar-right">
+        <span>CryptoLens Real-Time Analytics Engine</span>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Price Alert Modal -->
+  <div class="modal-overlay" id="alertModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">Set Alert for {{ coin.name }} ({{ coin.symbol }})</div>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+      <form id="createAlertForm" style="margin-bottom: 20px;">
+        <input type="hidden" id="alertSymbol" value="{{ coin.symbol }}">
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-bottom: 12px;">
+          <div class="form-group">
+            <label class="form-label">Target Price (USD)</label>
+            <input type="number" step="any" class="form-input" id="alertTargetPrice" value="{{ coin.price }}" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Condition</label>
+            <select class="form-select" id="alertCondition">
+              <option value="ABOVE">Above (▲)</option>
+              <option value="BELOW">Below (▼)</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit" class="btn-gold" style="width: 100%;">Create Live Alert</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+  <script>
+    let detailChart = null;
+    const currentSymbol = "{{ coin.symbol }}";
+
+    async function loadCoinDetailChart(tf = "24h") {
+      const canvas = document.getElementById("coinMainChartCanvas");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+
+      try {
+        const response = await fetch(`/api/history/${currentSymbol}?timeframe=${tf}`);
+        const res = await response.json();
+        const historyData = res.data || [];
+
+        const labels = historyData.map(d => {
+          const date = new Date(d.timestamp);
+          return tf === "24h" || tf === "1h" || tf === "6h" || tf === "12h"
+            ? date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            : date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+        });
+        const prices = historyData.map(d => d.price);
+
+        const gradient = ctx.createLinearGradient(0, 0, 0, 320);
+        gradient.addColorStop(0, "rgba(212, 175, 55, 0.45)");
+        gradient.addColorStop(0.7, "rgba(212, 175, 55, 0.1)");
+        gradient.addColorStop(1, "rgba(212, 175, 55, 0.0)");
+
+        if (detailChart) detailChart.destroy();
+
+        detailChart = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: labels,
+            datasets: [{
+              label: `${currentSymbol} Price (USD)`,
+              data: prices,
+              borderColor: "#D4AF37",
+              borderWidth: 2.4,
+              pointRadius: 0,
+              pointHoverRadius: 6,
+              pointHoverBackgroundColor: "#FFFFFF",
+              pointHoverBorderColor: "#D4AF37",
+              fill: true,
+              backgroundColor: gradient,
+              tension: 0.35
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: "index", intersect: false },
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: "#1c1f2e",
+                titleColor: "#D4AF37",
+                bodyColor: "#FFFFFF",
+                borderColor: "rgba(212, 175, 55, 0.4)",
+                borderWidth: 1,
+                callbacks: {
+                  label: (c) => `$${Number(c.raw).toLocaleString(undefined, { minimumFractionDigits: 2 })}`
+                }
+              }
+            },
+            scales: {
+              x: { grid: { color: "rgba(255, 255, 255, 0.04)" }, ticks: { color: "#8b92a5", maxTicksLimit: 8 } },
+              y: {
+                position: "right",
+                grid: { color: "rgba(255, 255, 255, 0.04)" },
+                ticks: {
+                  color: "#8b92a5",
+                  callback: v => `$${Number(v).toLocaleString()}`
+                }
+              }
+            }
+          }
+        });
+      } catch (e) {
+        console.error("Detail chart error:", e);
+      }
+    }
+
+    function switchDetailTimeframe(tf, btn) {
+      document.querySelectorAll(".timeframe-group .tf-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      loadCoinDetailChart(tf);
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      loadCoinDetailChart("24h");
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CryptoLens - Cryptocurrency Price Tracker & Analytics</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <!-- Chart.js via CDN for responsive dark/gold charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- ==========================================
+       SIDEBAR NAVIGATION
+       ========================================== -->
+  <aside class="sidebar">
+    <a href="/" class="sidebar-brand">
+      <div class="brand-icon">₿</div>
+      <div class="brand-info">
+        <div class="brand-title">Crypto<span>Lens</span></div>
+        <div class="brand-subtitle">Track · Analyze · Grow</div>
+      </div>
+    </a>
+
+    <ul class="sidebar-menu">
+      <li>
+        <a href="/" class="nav-link active">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+          <span class="nav-text">Dashboard</span>
+        </a>
+      </li>
+      <li>
+        <a href="/markets" class="nav-link">
+          <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+          <span class="nav-text">Markets</span>
+        </a>
+      </li>
+      <li>
+        <a href="#watchlist" class="nav-link" onclick="document.querySelector('[data-filter=watchlist]').click(); return false;">
+          <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+          <span class="nav-text">Watchlist</span>
+        </a>
+      </li>
+      <li>
+        <a href="javascript:void(0)" class="nav-link" onclick="openCompareModal()">
+          <svg viewBox="0 0 24 24"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>
+          <span class="nav-text">Compare</span>
+        </a>
+      </li>
+      <li>
+        <a href="#portfolio" class="nav-link">
+          <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+          <span class="nav-text">Portfolio</span>
+        </a>
+      </li>
+      <li>
+        <a href="javascript:void(0)" class="nav-link" onclick="openAlertModal()">
+          <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+          <span class="nav-text">Alerts</span>
+          <span class="badge">3</span>
+        </a>
+      </li>
+      <li>
+        <a href="/markets" class="nav-link">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+          <span class="nav-text">History</span>
+        </a>
+      </li>
+      <li>
+        <a href="/coin/BTC" class="nav-link">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="20" x2="12" y2="10"></line><line x1="18" y1="20" x2="18" y2="4"></line><line x1="6" y1="20" x2="6" y2="16"></line></svg>
+          <span class="nav-text">Analytics</span>
+        </a>
+      </li>
+      <li>
+        <a href="javascript:void(0)" class="nav-link" onclick="openAlertModal()">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          <span class="nav-text">Settings</span>
+        </a>
+      </li>
+    </ul>
+
+    <!-- Bottom Scraper Card -->
+    <div class="sidebar-status-card">
+      <div class="status-header">
+        <span class="pulse-dot"></span>
+        <span>Data Source</span>
+      </div>
+      <div class="status-source" style="color: #10b981;">Scraper Online</div>
+      <div style="font-size: 11px; color: var(--silver-light); margin-bottom: 6px;">CoinMarketCap</div>
+      <div class="status-time">
+        <span>Last Update:</span>
+        <span id="sidebarLastUpdate">{{ last_updated }}</span>
+      </div>
+      <div class="status-time">
+        <span>Next Update:</span>
+        <span id="sidebarNextUpdate">00:00:30</span>
+      </div>
+      <div class="sidebar-branding-note">
+        <span>📈</span>
+        <span>Better Data, Smarter Decisions</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ==========================================
+       MAIN WRAPPER & TOP BAR
+       ========================================== -->
+  <div class="main-wrapper">
+    <header class="app-header">
+      <div class="header-left">
+        <div class="search-box">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" id="cryptoSearchInput" class="search-input" placeholder="Search coin or symbol...">
+        </div>
+        <select class="filter-select" id="marketCapFilter">
+          <option value="15">Top 15 by Market Cap</option>
+          <option value="25">Top 25 by Market Cap</option>
+          <option value="all">All Available</option>
+        </select>
+      </div>
+
+      <div class="header-right">
+        <!-- Auto-Refresh Toggle -->
+        <div class="refresh-control">
+          <span class="refresh-label">
+            <svg viewBox="0 0 24 24"><path d="M23 4v6h-6"></path><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+            Auto Refresh
+          </span>
+          <label class="switch">
+            <input type="checkbox" id="autoRefreshToggle" checked>
+            <span class="slider"></span>
+          </label>
+          <select class="refresh-interval-select" id="refreshIntervalSelect">
+            <option value="15">15 sec</option>
+            <option value="30" selected>30 sec</option>
+            <option value="60">60 sec</option>
+          </select>
+        </div>
+
+        <button class="icon-button" id="manualRefreshBtn" title="Scrape & Refresh Now">
+          <svg viewBox="0 0 24 24"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+        </button>
+
+        <button class="icon-button" onclick="openAlertModal()" title="Notifications & Alerts">
+          <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+          <span class="notification-badge"></span>
+        </button>
+
+        <div class="user-avatar" title="Investor Profile">JD</div>
+
+        <button class="icon-button" id="themeToggleBtn" title="Toggle Light/Dark Theme">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- ==========================================
+         PAGE CONTENT
+         ========================================== -->
+    <main class="content-area">
+
+      <!-- Top Stat Cards (5 Cards) -->
+      <section class="metrics-row">
+        <!-- 1. Total Market Cap -->
+        <div class="stat-card">
+          <div class="stat-card-top">
+            <div>
+              <div class="stat-title">Total Market Cap</div>
+              <div class="stat-value" id="topTotalMcap">{{ metrics.total_market_cap_formatted }}</div>
+            </div>
+            <div class="stat-icon gold">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>
+            </div>
+          </div>
+          <div class="stat-bottom">
+            <span class="stat-change change-up">▲ +{{ metrics.market_cap_change_24h }}% (24h)</span>
+            <canvas class="sparkline-canvas-mini" id="miniSparkMcap" width="75" height="26"></canvas>
+          </div>
+        </div>
+
+        <!-- 2. 24h Trading Volume -->
+        <div class="stat-card">
+          <div class="stat-card-top">
+            <div>
+              <div class="stat-title">24h Trading Volume</div>
+              <div class="stat-value" id="topTotalVol">{{ metrics.total_volume_formatted }}</div>
+            </div>
+            <div class="stat-icon silver">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            </div>
+          </div>
+          <div class="stat-bottom">
+            <span class="stat-change change-up">▲ +{{ metrics.volume_change_24h }}% (24h)</span>
+            <canvas class="sparkline-canvas-mini" id="miniSparkVol" width="75" height="26"></canvas>
+          </div>
+        </div>
+
+        <!-- 3. BTC Dominance -->
+        <div class="stat-card">
+          <div class="stat-card-top">
+            <div>
+              <div class="stat-title">BTC Dominance</div>
+              <div class="stat-value" id="topBtcDom">{{ metrics.btc_dominance }}%</div>
+            </div>
+            <div class="stat-icon gold" style="font-weight: 800;">₿</div>
+          </div>
+          <div class="stat-bottom">
+            <span class="stat-change change-up">▲ +{{ metrics.btc_dominance_change }}%</span>
+            <canvas class="sparkline-canvas-mini" id="miniSparkBtc" width="75" height="26"></canvas>
+          </div>
+        </div>
+
+        <!-- 4. Fear & Greed Index -->
+        <div class="stat-card">
+          <div class="stat-card-top">
+            <div>
+              <div class="stat-title">Fear & Greed Index</div>
+              <div class="stat-value">{{ metrics.fear_greed_index }} <span style="font-size: 13px; font-weight: 500; color: var(--gold-primary);">{{ metrics.fear_greed_label }}</span></div>
+            </div>
+            <div class="stat-icon gold">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            </div>
+          </div>
+          <div class="meter-bar-container">
+            <div class="meter-bar-fill" style="width: 61%;"></div>
+          </div>
+        </div>
+
+        <!-- 5. Market Sentiment -->
+        <div class="stat-card">
+          <div class="stat-card-top">
+            <div>
+              <div class="stat-title">Market Sentiment</div>
+            </div>
+            <div class="stat-icon silver">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+            </div>
+          </div>
+          <div class="sentiment-donut-wrap">
+            <div class="sentiment-legend">
+              <div class="legend-item"><span class="legend-dot bullish"></span> Bullish: 61%</div>
+              <div class="legend-item"><span class="legend-dot bearish"></span> Bearish: 39%</div>
+            </div>
+            <div class="donut-circle">
+              <div class="donut-inner">61%</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Middle Row: Bitcoin Chart + Gainers + Losers + Heatmap -->
+      <section class="middle-row">
+        <!-- Bitcoin Main Price Chart Card -->
+        <div class="dashboard-card" style="grid-column: span 1;">
+          <div class="hero-chart-header">
+            <div>
+              <div class="hero-coin-identity">
+                <div class="hero-coin-icon">₿</div>
+                <div>
+                  <span class="hero-coin-name">Bitcoin</span>
+                  <span class="hero-coin-symbol">(BTC)</span>
+                </div>
+              </div>
+              <div class="hero-coin-price-block">
+                <span class="hero-coin-price">$58,081.32</span>
+                <span class="hero-price-badge change-up" style="background: var(--green-bg); color: var(--green-up);">▲ +5.13% (24h)</span>
+              </div>
+            </div>
+
+            <!-- Timeframe Pills -->
+            <div class="timeframe-group">
+              <button class="tf-btn" data-tf="1H">1H</button>
+              <button class="tf-btn" data-tf="6H">6H</button>
+              <button class="tf-btn" data-tf="12H">12H</button>
+              <button class="tf-btn active" data-tf="24H">24H</button>
+              <button class="tf-btn" data-tf="7D">7D</button>
+              <button class="tf-btn" data-tf="30D">30D</button>
+              <button class="tf-btn" data-tf="90D">90D</button>
+              <button class="tf-btn" data-tf="1Y">1Y</button>
+            </div>
+          </div>
+
+          <div class="chart-container-wrap">
+            <canvas id="heroPriceChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Top Gainers (24h) -->
+        <div class="dashboard-card">
+          <div class="card-header-bar">
+            <div class="card-title-text gainers">
+              <svg width="15" height="15" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+              Top Gainers (24h)
+            </div>
+          </div>
+          <ul class="mini-ranking-list" id="topGainersList">
+            <li class="mini-ranking-item" onclick="openCoinModal('MATIC')">
+              <div class="mini-coin-identity">
+                <span class="mini-rank-idx">1</span>
+                <div class="mini-coin-circle" style="background-color: #8247E5;">M</div>
+                <span class="mini-coin-symbol">MATIC</span>
+              </div>
+              <div class="mini-coin-values">
+                <span class="mini-coin-change change-up">+6.89%</span>
+                <span class="mini-coin-price">$0.97</span>
+              </div>
+            </li>
+            <li class="mini-ranking-item" onclick="openCoinModal('DOGE')">
+              <div class="mini-coin-identity">
+                <span class="mini-rank-idx">2</span>
+                <div class="mini-coin-circle" style="background-color: #C2A633;">Ð</div>
+                <span class="mini-coin-symbol">DOGE</span>
+              </div>
+              <div class="mini-coin-values">
+                <span class="mini-coin-change change-up">+4.15%</span>
+                <span class="mini-coin-price">$0.1250</span>
+              </div>
+            </li>
+            <li class="mini-ranking-item" onclick="openCoinModal('AVAX')">
+              <div class="mini-coin-identity">
+                <span class="mini-rank-idx">3</span>
+                <div class="mini-coin-circle" style="background-color: #E84142;">A</div>
+                <span class="mini-coin-symbol">AVAX</span>
+              </div>
+              <div class="mini-coin-values">
+                <span class="mini-coin-change change-up">+3.45%</span>
+                <span class="mini-coin-price">$124.90</span>
+              </div>
+            </li>
+            <li class="mini-ranking-item" onclick="openCoinModal('LINK')">
+              <div class="mini-coin-identity">
+                <span class="mini-rank-idx">4</span>
+                <div class="mini-coin-circle" style="background-color: #375BD2;">L</div>
+                <span class="mini-coin-symbol">LINK</span>
+              </div>
+              <div class="mini-coin-values">
+                <span class="mini-coin-change change-up">+3.32%</span>
+                <span class="mini-coin-price">$25.91</span>
+              </div>
+            </li>
+            <li class="mini-ranking-item" onclick="openCoinModal('SOL')">
+              <div class="mini-coin-identity">
+                <span class="mini-rank-idx">5</span>
+                <div class="mini-coin-circle" style="background-color: #14F195; color: #12141c;">S</div>
+                <span class="mini-coin-symbol">SOL</span>
+              </div>
+              <div class="mini-coin-values">
+                <span class="mini-coin-change change-up">+2.69%</span>
+                <span class="mini-coin-price">$180.14</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Top Losers (24h) -->
+        <div class="dashboard-card">
+          <div class="card-header-bar">
+            <div class="card-title-text losers">
+              <svg width="15" height="15" viewBox="0 0 24 24"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline><polyline points="17 18 23 18 23 12"></polyline></svg>
+              Top Losers (24h)
+            </div>
+          </div>
+          <ul class="mini-ranking-list" id="topLosersList">
+            <li class="mini-ranking-item" onclick="openCoinModal('BNB')">
+              <div class="mini-coin-identity">
+                <span class="mini-rank-idx">1</span>
+                <div class="mini-coin-circle" style="background-color: #F3BA2F; color: #12141c;">B</div>
+                <span class="mini-coin-symbol">BNB</span>
+              </div>
+              <div class="mini-coin-values">
+                <span class="mini-coin-change change-down">-3.09%</span>
+                <span class="mini-coin-price">$611.26</span>
+              </div>
+            </li>
+            <li class="mini-ranking-item" onclick="openCoinModal('TON')">
+              <div class="mini-coin-identity">
+                <span class="mini-rank-idx">2</span>
+                <div class="mini-coin-circle" style="background-color: #0098EA;">T</div>
+                <span class="mini-coin-symbol">TON</span>
+              </div>
+              <div class="mini-coin-values">
+                <span class="mini-coin-change change-down">-4.11%</span>
+                <span class="mini-coin-price">$3.90</span>
+              </div>
+            </li>
+            <li class="mini-ranking-item" onclick="openCoinModal('DOT')">
+              <div class="mini-coin-identity">
+                <span class="mini-rank-idx">3</span>
+                <div class="mini-coin-circle" style="background-color: #E6007A;">D</div>
+                <span class="mini-coin-symbol">DOT</span>
+              </div>
+              <div class="mini-coin-values">
+                <span class="mini-coin-change change-down">-2.79%</span>
+                <span class="mini-coin-price">$8.69</span>
+              </div>
+            </li>
+            <li class="mini-ranking-item" onclick="openCoinModal('POL')">
+              <div class="mini-coin-identity">
+                <span class="mini-rank-idx">4</span>
+                <div class="mini-coin-circle" style="background-color: #8247E5;">P</div>
+                <span class="mini-coin-symbol">POL</span>
+              </div>
+              <div class="mini-coin-values">
+                <span class="mini-coin-change change-down">-1.82%</span>
+                <span class="mini-coin-price">$0.9751</span>
+              </div>
+            </li>
+            <li class="mini-ranking-item" onclick="openCoinModal('LTC')">
+              <div class="mini-coin-identity">
+                <span class="mini-rank-idx">5</span>
+                <div class="mini-coin-circle" style="background-color: #345D9D;">Ł</div>
+                <span class="mini-coin-symbol">LTC</span>
+              </div>
+              <div class="mini-coin-values">
+                <span class="mini-coin-change change-down">-0.79%</span>
+                <span class="mini-coin-price">$113.11</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Market Heatmap -->
+        <div class="dashboard-card">
+          <div class="card-header-bar">
+            <div class="card-title-text heatmap">
+              <svg width="15" height="15" viewBox="0 0 24 24"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path></svg>
+              Market Heatmap
+            </div>
+          </div>
+          <div class="heatmap-grid" id="marketHeatmapGrid">
+            <div class="heatmap-tile positive-strong" onclick="openCoinModal('BTC')">
+              <span class="heatmap-symbol">BTC</span>
+              <span class="heatmap-pct">+5.13%</span>
+            </div>
+            <div class="heatmap-tile positive" onclick="openCoinModal('ETH')">
+              <span class="heatmap-symbol">ETH</span>
+              <span class="heatmap-pct">+0.19%</span>
+            </div>
+            <div class="heatmap-tile positive" onclick="openCoinModal('SOL')">
+              <span class="heatmap-symbol">SOL</span>
+              <span class="heatmap-pct">+2.69%</span>
+            </div>
+            <div class="heatmap-tile positive" onclick="openCoinModal('XRP')">
+              <span class="heatmap-symbol">XRP</span>
+              <span class="heatmap-pct">+0.50%</span>
+            </div>
+            <div class="heatmap-tile negative" onclick="openCoinModal('BNB')">
+              <span class="heatmap-symbol">BNB</span>
+              <span class="heatmap-pct">-3.09%</span>
+            </div>
+            <div class="heatmap-tile positive" onclick="openCoinModal('DOGE')">
+              <span class="heatmap-symbol">DOGE</span>
+              <span class="heatmap-pct">+4.15%</span>
+            </div>
+            <div class="heatmap-tile positive" onclick="openCoinModal('ADA')">
+              <span class="heatmap-symbol">ADA</span>
+              <span class="heatmap-pct">+1.29%</span>
+            </div>
+            <div class="heatmap-tile negative" onclick="openCoinModal('AVAX')">
+              <span class="heatmap-symbol">AVAX</span>
+              <span class="heatmap-pct">-0.71%</span>
+            </div>
+            <div class="heatmap-tile positive" onclick="openCoinModal('TRX')">
+              <span class="heatmap-symbol">TRX</span>
+              <span class="heatmap-pct">+1.62%</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Lower Section: All Cryptocurrencies Table + Right Side Widgets -->
+      <section class="lower-row">
+        <!-- All Cryptocurrencies Table Card -->
+        <div class="table-card">
+          <div class="table-toolbar">
+            <div class="table-toolbar-left">
+              <div class="table-title">All Cryptocurrencies</div>
+              <div class="filter-pills-group">
+                <button class="filter-pill-btn active" data-filter="all">All</button>
+                <button class="filter-pill-btn" data-filter="gainers">Gainers</button>
+                <button class="filter-pill-btn" data-filter="losers">Losers</button>
+                <button class="filter-pill-btn" data-filter="watchlist">Watchlist</button>
+              </div>
+            </div>
+
+            <button class="toolbar-action-btn" onclick="triggerCsvExport()">
+              <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              Filter & Sort / Export
+            </button>
+          </div>
+
+          <div class="table-responsive">
+            <table class="crypto-table">
+              <thead>
+                <tr>
+                  <th class="sortable" data-col="rank"># <span class="sort-icon">▲</span></th>
+                  <th class="sortable" data-col="name">Name <span class="sort-icon">↕</span></th>
+                  <th class="sortable" data-col="price">Price <span class="sort-icon">↕</span></th>
+                  <th class="sortable" data-col="change_1h">1h <span class="sort-icon">↕</span></th>
+                  <th class="sortable" data-col="change_24h">24h <span class="sort-icon">↕</span></th>
+                  <th class="sortable" data-col="change_7d">7d <span class="sort-icon">↕</span></th>
+                  <th class="sortable" data-col="market_cap">Market Cap <span class="sort-icon">↕</span></th>
+                  <th class="sortable" data-col="volume_24h">Volume (24h) <span class="sort-icon">↕</span></th>
+                  <th>Trend</th>
+                  <th>Watchlist</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="cryptoTableBody">
+                <!-- Populated dynamically via JavaScript with zero placeholder comments -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Right Side Column Widgets -->
+        <div class="side-widgets-col">
+          <!-- Portfolio Overview Card -->
+          <div class="portfolio-card" id="portfolio">
+            <div class="portfolio-header">
+              <div class="card-title-text" style="color: var(--gold-primary);">
+                <svg width="16" height="16" viewBox="0 0 24 24" stroke="var(--gold-primary)"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+                Portfolio Overview
+              </div>
+            </div>
+
+            <div class="portfolio-val-block">
+              <div>
+                <div style="font-size: 11px; color: var(--silver-primary);">Total Value</div>
+                <div class="port-total-val" id="portTotalValue">${{ "{:,.2f}".format(portfolio.total_value) }}</div>
+              </div>
+              <span class="stat-change change-up">▲ +{{ portfolio.total_change_24h }}% (24h)</span>
+            </div>
+
+            <div style="font-size: 11px; color: var(--silver-primary); margin-bottom: 8px; font-weight: 600;">Your Holdings</div>
+            <ul class="port-holdings-list">
+              {% for item in portfolio.holdings %}
+              <li class="port-holding-row">
+                <div class="holding-left">
+                  <div class="mini-coin-circle" style="background-color: {% if item.symbol == 'BTC' %}#F7931A{% elif item.symbol == 'ETH' %}#627EEA{% else %}#14F195{% endif %};">
+                    {{ item.symbol[0] }}
+                  </div>
+                  <div>
+                    <div class="holding-coin-name">{{ item.name }}</div>
+                    <div class="holding-coin-amt">{{ item.amount }} {{ item.symbol }}</div>
+                  </div>
+                </div>
+                <div class="holding-right">
+                  <div class="holding-value">${{ "{:,.2f}".format(item.value) }}</div>
+                  <div class="holding-change {% if item.change_24h >= 0 %}change-up{% else %}change-down{% endif %}">
+                    {% if item.change_24h >= 0 %}+{% endif %}{{ "{:.2f}".format(item.change_24h) }}%
+                  </div>
+                </div>
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+
+          <!-- Quick Actions Card -->
+          <div class="quick-actions-card">
+            <div class="card-title-text" style="color: var(--silver-light);">
+              <svg width="15" height="15" viewBox="0 0 24 24" stroke="var(--silver-light)"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
+              Quick Actions
+            </div>
+
+            <div class="quick-actions-grid">
+              <a href="javascript:void(0)" class="action-card-btn" id="actionCompareCoins">
+                <svg viewBox="0 0 24 24"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>
+                <span class="action-card-text">Compare Coins</span>
+              </a>
+
+              <a href="javascript:void(0)" class="action-card-btn" id="actionSetAlert">
+                <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                <span class="action-card-text">Set Alert</span>
+              </a>
+
+              <a href="javascript:void(0)" class="action-card-btn" id="actionExportCsv">
+                <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                <span class="action-card-text">Export CSV</span>
+              </a>
+
+              <a href="javascript:void(0)" class="action-card-btn" onclick="document.querySelector('[data-filter=watchlist]').click();">
+                <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                <span class="action-card-text">Watchlist</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ==========================================
+         FIXED BOTTOM STATUS BAR
+         ========================================== -->
+    <footer class="status-bar-fixed">
+      <div class="status-bar-left">
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span class="pulse-dot"></span>
+          <span id="scraperStatusText" style="color: #10b981; font-weight: 600;">Selenium Scraper: Running</span>
+        </div>
+        <div>Last updated: <span id="lastUpdatedTime">{{ last_updated }}</span></div>
+        <div>Next update: <span id="nextUpdateCountdown">00:00:30</span></div>
+      </div>
+      <div class="status-bar-right">
+        <span>📈 Live Prices</span>
+        <span>•</span>
+        <span>Real Insights</span>
+        <span>•</span>
+        <span>Smarter Trading</span>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ==========================================
+       MODAL 1: COIN DETAILS
+       ========================================== -->
+  <div class="modal-overlay" id="coinDetailsModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span id="modalCoinName">Bitcoin</span>
+          <span id="modalCoinSymbol" style="color: var(--silver-primary); font-size: 13px;">BTC</span>
+        </div>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+
+      <div style="display: flex; align-items: baseline; gap: 12px; margin-bottom: 16px;">
+        <span id="modalCoinPrice" style="font-size: 26px; font-weight: 800; color: var(--text-white);">$0.00</span>
+        <span id="modalCoinChange" class="hero-price-badge change-up">+0.00% (24h)</span>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px;">
+        <div style="background: var(--bg-input); padding: 12px; border-radius: 8px;">
+          <div style="font-size: 11px; color: var(--silver-primary);">Market Cap</div>
+          <div id="modalMcap" style="font-size: 15px; font-weight: 700; color: var(--text-white);">$0</div>
+        </div>
+        <div style="background: var(--bg-input); padding: 12px; border-radius: 8px;">
+          <div style="font-size: 11px; color: var(--silver-primary);">24h Volume</div>
+          <div id="modalVol" style="font-size: 15px; font-weight: 700; color: var(--text-white);">$0</div>
+        </div>
+        <div style="background: var(--bg-input); padding: 12px; border-radius: 8px;">
+          <div style="font-size: 11px; color: var(--silver-primary);">Circulating Supply</div>
+          <div id="modalSupply" style="font-size: 15px; font-weight: 700; color: var(--text-white);">0</div>
+        </div>
+      </div>
+
+      <div style="height: 240px; margin-bottom: 20px;">
+        <canvas id="modalDetailChart"></canvas>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 12px;">
+        <button class="btn-outline close-modal-trigger">Close</button>
+        <button class="btn-gold" onclick="openAlertModal()">Set Alert For This Coin</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       MODAL 2: COIN COMPARISON
+       ========================================== -->
+  <div class="modal-overlay" id="compareModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">Coin Comparison Matrix</div>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+        <div class="form-group">
+          <label class="form-label">First Cryptocurrency</label>
+          <select class="form-select" id="compareCoin1">
+            {% for c in coins %}
+            <option value="{{ c.symbol }}" {% if c.symbol == 'BTC' %}selected{% endif %}>{{ c.name }} ({{ c.symbol }})</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Second Cryptocurrency</label>
+          <select class="form-select" id="compareCoin2">
+            {% for c in coins %}
+            <option value="{{ c.symbol }}" {% if c.symbol == 'ETH' %}selected{% endif %}>{{ c.name }} ({{ c.symbol }})</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div id="compareMetricsSummary"></div>
+
+      <div style="height: 240px; margin-bottom: 20px;">
+        <canvas id="compareChartCanvas"></canvas>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end;">
+        <button class="btn-outline close-modal-trigger">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       MODAL 3: PRICE ALERTS
+       ========================================== -->
+  <div class="modal-overlay" id="alertModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">Custom Price Alert Thresholds</div>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+
+      <form id="createAlertForm" style="margin-bottom: 20px;">
+        <div style="display: grid; grid-template-columns: 2fr 2fr 1.5fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label">Cryptocurrency</label>
+            <select class="form-select" id="alertSymbol" required>
+              {% for c in coins %}
+              <option value="{{ c.symbol }}">{{ c.name }} ({{ c.symbol }})</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Target Price (USD)</label>
+            <input type="number" step="any" class="form-input" id="alertTargetPrice" placeholder="e.g. 62000" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Condition</label>
+            <select class="form-select" id="alertCondition">
+              <option value="ABOVE">Above (▲)</option>
+              <option value="BELOW">Below (▼)</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit" class="btn-gold" style="width: 100%;">Create Live Price Alert</button>
+      </form>
+
+      <div style="border-top: 1px solid var(--border-subtle); padding-top: 14px;">
+        <div class="form-label">Active & Triggered Alerts</div>
+        <div id="currentAlertsList" style="max-height: 180px; overflow-y: auto;">
+          <!-- Loaded dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container for Price Alerts -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Core Script File -->
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
