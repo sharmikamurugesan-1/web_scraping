@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="no-referrer">
+  <title>{{ page_title }} — CineRank IMDb Intelligence Dashboard</title>
+
+  <!-- Favicon Icon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎬</text></svg>">
+
+  <!-- Bootstrap 5 CSS (via CDN) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- Font Awesome Icons (via CDN) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- CineRank Custom Styles -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+  <!-- Chart.js (via CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+  <!-- ==========================================
+       GLOBAL TOP NAVIGATION BAR
+       ========================================== -->
+  <nav class="navbar navbar-expand-lg cinerank-navbar">
+    <div class="container-fluid px-lg-4">
+      <a class="brand-logo" href="{{ url_for('dashboard') }}">
+        <div class="brand-icon-box">🎬</div>
+        <div>
+          <h1 class="brand-title">Cine<span>Rank</span></h1>
+          <div class="brand-subtitle">IMDb Movie Intelligence</div>
+        </div>
+      </a>
+
+      <button class="navbar-toggler border-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#cinerankNav" aria-controls="cinerankNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="cinerankNav">
+        <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-1">
+          <li class="nav-item">
+            <a class="nav-link-cinerank {% if request.path == '/' or request.path == '/dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
+              <i class="fa-solid fa-chart-pie"></i> Dashboard
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link-cinerank {% if request.path == '/movies' %}active{% endif %}" href="{{ url_for('movies') }}">
+              <i class="fa-solid fa-film"></i> Top 250
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link-cinerank {% if request.path == '/analytics' %}active{% endif %}" href="{{ url_for('analytics') }}">
+              <i class="fa-solid fa-chart-simple"></i> Analytics
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link-cinerank {% if request.path == '/scraper' %}active{% endif %}" href="{{ url_for('scraper_page') }}">
+              <i class="fa-solid fa-robot"></i> Scraper
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link-cinerank {% if request.path == '/about' %}active{% endif %}" href="{{ url_for('about') }}">
+              <i class="fa-solid fa-circle-info"></i> About
+            </a>
+          </li>
+        </ul>
+
+        <div class="d-flex align-items-center gap-2">
+          <!-- Demo Data Indicator Badge -->
+          {% if stats and stats.is_demo %}
+          <span class="badge bg-warning text-dark px-2 py-1" style="font-size: 11px;" title="Sample dataset currently active. Run scraper to refresh.">
+            <i class="fa-solid fa-database"></i> Demo Data
+          </span>
+          {% endif %}
+
+          <!-- Scraper Telemetry Badge -->
+          <a href="{{ url_for('scraper_page') }}" class="btn btn-dark-custom btn-sm scraper-nav-badge text-decoration-none">
+            <span class="pulse-dot {% if scraper_status and scraper_status.status == 'running' %}running{% elif scraper_status and scraper_status.status == 'error' %}error{% else %}idle{% endif %}"></span>
+            <span id="navScraperStatusText">
+              {% if scraper_status and scraper_status.status == 'running' %}
+                Scraping ({{ scraper_status.progress }}%)
+              {% else %}
+                Selenium Idle
+              {% endif %}
+            </span>
+          </a>
+
+          <!-- Download CSV Shortcut -->
+          <a href="{{ url_for('download_csv') }}" class="btn btn-gold btn-sm" title="Download latest scraped movies CSV">
+            <i class="fa-solid fa-file-csv"></i> CSV
+          </a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ==========================================
+       PAGE CONTENT BLOCK
+       ========================================== -->
+  <main class="flex-grow-1 py-4">
+    <div class="container-fluid px-lg-4">
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+
+  <!-- ==========================================
+       GLOBAL FOOTER
+       ========================================== -->
+  <footer class="cinerank-footer">
+    <div class="container-fluid px-lg-4 d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+      <div>
+        <strong>CineRank</strong> — High-Performance IMDb Movie Intelligence Dashboard & Automated Scraper.
+      </div>
+      <div class="d-flex align-items-center gap-3">
+        <span>Powered by <strong>Python · Flask · Selenium · Chart.js</strong></span>
+        <span>•</span>
+        <a href="{{ url_for('about') }}">Documentation</a>
+        <span>•</span>
+        <a href="{{ url_for('download_csv') }}">Download CSV</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==========================================
+       TOAST NOTIFICATION CONTAINER
+       ========================================== -->
+  <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 2050;" id="toastContainer"></div>
+
+  <!-- Bootstrap 5 JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Global Shared Script -->
+  <script>
+    // Universal Toast Notification Dispatcher
+    function showToast(title, message, type = "gold") {
+      const container = document.getElementById("toastContainer");
+      if (!container) return;
+
+      const toastId = "toast_" + Date.now();
+      const toastEl = document.createElement("div");
+      toastEl.className = "toast align-items-center text-white border-0";
+      toastEl.style.backgroundColor = type === "error" ? "#dc2626" : type === "green" ? "#10b981" : "#1f212f";
+      toastEl.style.borderLeft = type === "error" ? "4px solid #f87171" : "4px solid #f5c518";
+      toastEl.id = toastId;
+      toastEl.setAttribute("role", "alert");
+      toastEl.setAttribute("aria-live", "assertive");
+      toastEl.setAttribute("aria-atomic", "true");
+
+      toastEl.innerHTML = `
+        <div class="d-flex">
+          <div class="toast-body">
+            <div style="font-weight: 700; color: #f5c518; margin-bottom: 2px;">${title}</div>
+            <div style="font-size: 12.5px;">${message}</div>
+          </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      `;
+
+      container.appendChild(toastEl);
+      const bsToast = new bootstrap.Toast(toastEl, { delay: 4500 });
+      bsToast.show();
+      toastEl.addEventListener("hidden.bs.toast", () => toastEl.remove());
+    }
+  </script>
+
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

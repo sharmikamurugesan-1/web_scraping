@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-12 col-xl-10">
+    <!-- Header -->
+    <div class="mb-4">
+      <h2 class="fw-bold text-white mb-1">IMDb Data Scraper</h2>
+      <p class="text-secondary mb-0" style="font-size: 14px;">
+        Scrape the latest IMDb Top 250 movie rankings using Selenium and Chrome WebDriver.
+      </p>
+    </div>
+
+    <!-- Scraper Control Console Card -->
+    <div class="scraper-console-card mb-4">
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4 pb-3 border-bottom border-secondary border-opacity-25">
+        <div>
+          <h4 class="text-white fw-bold mb-1">Automation Controller</h4>
+          <div class="text-secondary small">
+            Configure headless execution parameters and trigger multi-threaded scraping.
+          </div>
+        </div>
+
+        <!-- Headless Mode Toggle -->
+        <div class="form-check form-switch d-flex align-items-center gap-2 p-0 m-0">
+          <input class="form-check-input ms-0 me-2" type="checkbox" role="switch" id="headlessModeToggle" checked style="width: 2.4em; height: 1.2em; cursor: pointer;">
+          <label class="form-check-label text-white fw-semibold small" for="headlessModeToggle" style="cursor: pointer;">
+            <i class="fa-solid fa-eye-slash text-gold"></i> Run in Headless Mode
+          </label>
+        </div>
+      </div>
+
+      <!-- Action Button Group -->
+      <div class="d-flex flex-wrap align-items-center gap-3 mb-4">
+        <button type="button" class="btn btn-gold" id="startScrapeBtn">
+          <i class="fa-solid fa-play"></i> START SCRAPING
+        </button>
+
+        <button type="button" class="btn btn-danger d-none" id="stopScrapeBtn">
+          <i class="fa-solid fa-stop"></i> STOP SCRAPING
+        </button>
+
+        <button type="button" class="btn btn-dark-custom" id="clearDataBtn">
+          <i class="fa-solid fa-trash-can"></i> CLEAR DATA
+        </button>
+
+        <a href="{{ url_for('download_csv') }}" class="btn btn-outline-gold" id="downloadCsvBtn">
+          <i class="fa-solid fa-file-arrow-down"></i> DOWNLOAD CSV
+        </a>
+      </div>
+
+      <!-- Live Progress Display Card -->
+      <div class="p-3 rounded-3 mb-4" style="background-color: var(--bg-input); border: 1px solid var(--border-subtle);">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div class="d-flex align-items-center gap-2">
+            <span class="pulse-dot idle" id="scraperStatusDot"></span>
+            <span class="text-white fw-bold" id="scraperStatusTitle">Status: Idle</span>
+          </div>
+          <div class="text-gold fw-bold fs-6" id="scraperProgressPercent">0%</div>
+        </div>
+
+        <!-- Visual Animated Progress Bar -->
+        <div class="progress-cinematic">
+          <div class="progress-bar progress-bar-cinematic progress-bar-striped progress-bar-animated"
+               role="progressbar"
+               id="scraperProgressBar"
+               style="width: 0%;"
+               aria-valuenow="0"
+               aria-valuemin="0"
+               aria-valuemax="100">0%</div>
+        </div>
+
+        <div class="row g-2 mt-2 pt-2 border-top border-secondary border-opacity-25" style="font-size: 13px;">
+          <div class="col-12 col-md-6">
+            <span class="text-secondary">Movies Scraped:</span>
+            <strong class="text-white ms-1" id="scraperCountText">0 / 250 movies scraped</strong>
+          </div>
+          <div class="col-12 col-md-6 text-md-end">
+            <span class="text-secondary">Current Movie:</span>
+            <strong class="text-gold ms-1 text-truncate d-inline-block align-bottom" style="max-width: 260px;" id="scraperCurrentMovieText">
+              None
+            </strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scraper Live Terminal Log -->
+      <div>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div class="text-secondary small fw-bold text-uppercase">
+            <i class="fa-solid fa-terminal text-gold me-1"></i> Live Execution Terminal
+          </div>
+          <button type="button" class="btn btn-sm btn-link text-secondary text-decoration-none p-0" id="clearLogsBtn">
+            Clear Logs
+          </button>
+        </div>
+        <div class="terminal-log-box" id="terminalLogBox">
+          <div class="text-muted">[System] Scraper control initialized. Ready to trigger.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Safety & Architecture Card -->
+    <div class="card bg-dark border-secondary border-opacity-25 rounded-3 p-4" style="background-color: var(--bg-card) !important;">
+      <h5 class="text-white fw-bold mb-3">
+        <i class="fa-solid fa-shield-halved text-gold me-2"></i> Non-Aggressive Scraping Architecture
+      </h5>
+      <div class="row g-4 text-secondary small" style="line-height: 1.6;">
+        <div class="col-12 col-md-4">
+          <strong class="text-white d-block mb-1"><i class="fa-solid fa-hourglass-half text-gold me-1"></i> Explicit WebDriverWait</strong>
+          Dynamically listens for JavaScript rendering events rather than relying solely on arbitrary sleep timers, ensuring maximum reliability.
+        </div>
+        <div class="col-12 col-md-4">
+          <strong class="text-white d-block mb-1"><i class="fa-solid fa-microchip text-gold me-1"></i> Multi-Threaded Daemon</strong>
+          Execution occurs in an asynchronous background thread, allowing full client responsiveness and uninterrupted user navigation.
+        </div>
+        <div class="col-12 col-md-4">
+          <strong class="text-white d-block mb-1"><i class="fa-solid fa-database text-gold me-1"></i> Resilient Fallback Cache</strong>
+          If IMDb enforces rate limits or drops connection, the terminal safely preserves existing data and provides immediate status feedback.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/scraper.js') }}"></script>
+{% endblock %}

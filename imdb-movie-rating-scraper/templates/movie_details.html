@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-10 col-xl-9">
+    <!-- Breadcrumb navigation -->
+    <nav aria-label="breadcrumb" class="mb-3">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}" class="text-secondary text-decoration-none">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('movies') }}" class="text-secondary text-decoration-none">Top 250</a></li>
+        <li class="breadcrumb-item active text-gold" aria-current="page">#{{ movie.Rank }} {{ movie.Title }}</li>
+      </ol>
+    </nav>
+
+    <!-- Main Detail Card -->
+    <div class="card bg-dark border-secondary border-opacity-25 rounded-4 overflow-hidden shadow-lg p-4 mb-4" style="background-color: var(--bg-card) !important; border-color: var(--border-gold) !important;">
+      <div class="row g-4 align-items-center">
+        <!-- Left: Poster Column -->
+        <div class="col-12 col-md-5 col-lg-4 text-center">
+          <div class="rounded-3 overflow-hidden shadow-lg border border-secondary border-opacity-25 position-relative d-inline-block">
+            {% if movie.Poster %}
+            <img src="{{ movie.Poster }}" alt="{{ movie.Title }}" class="img-fluid rounded" style="max-height: 380px; width: 100%; object-fit: cover;" referrerpolicy="no-referrer" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            {% else %}
+            <div class="d-flex flex-column align-items-center justify-content-center p-5 rounded" style="background-color: var(--bg-input); width: 260px; height: 380px;">
+              <i class="fa-solid fa-film text-gold mb-3" style="font-size: 48px;"></i>
+              <div class="text-white fw-bold">{{ movie.Title }}</div>
+              <div class="text-secondary small">{{ movie.Year }}</div>
+            </div>
+            {% endif %}
+            <span class="card-rank-badge" style="top: 12px; left: 12px; font-size: 13px;">Rank #{{ movie.Rank }}</span>
+          </div>
+        </div>
+
+        <!-- Right: Metadata Column -->
+        <div class="col-12 col-md-7 col-lg-8">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <span class="badge bg-warning text-dark fw-bold px-3 py-1" style="font-size: 13px;">
+              <i class="fa-solid fa-trophy"></i> IMDb Top 250
+            </span>
+            <span class="text-secondary">•</span>
+            <span class="text-white fw-semibold">{{ movie.Year }}</span>
+          </div>
+
+          <h1 class="text-white fw-bold mb-3" style="font-size: 32px; letter-spacing: -0.5px;">
+            {{ movie.Title }}
+          </h1>
+
+          <div class="d-flex align-items-center gap-3 mb-4">
+            <div class="d-flex align-items-center gap-2 px-3 py-2 rounded-3" style="background-color: rgba(245, 197, 24, 0.12); border: 1px solid var(--border-gold);">
+              <i class="fa-solid fa-star text-gold fs-4"></i>
+              <div>
+                <span class="fs-4 fw-bold text-gold">{{ movie['IMDb Rating'] }}</span>
+                <span class="text-secondary small">/ 10</span>
+              </div>
+            </div>
+            <div class="text-secondary small">
+              Verified global score from millions of ratings.
+            </div>
+          </div>
+
+          <div class="p-3 rounded-3 mb-4" style="background-color: var(--bg-input); border: 1px solid var(--border-subtle);">
+            <div class="text-secondary small text-uppercase fw-bold mb-1">CineRank Metadata & Provenance</div>
+            <div class="text-white" style="font-size: 14px; line-height: 1.6;">
+              This title is ranked at position <strong>#{{ movie.Rank }}</strong> on the prestigious IMDb Top 250 chart. Extracted and indexed by the CineRank automated Selenium crawler engine with dynamic DOM evaluation.
+            </div>
+          </div>
+
+          <div class="d-flex flex-wrap gap-2">
+            {% if movie['IMDb URL'] %}
+            <a href="{{ movie['IMDb URL'] }}" target="_blank" rel="noopener noreferrer" class="btn btn-gold">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i> View Official Page on IMDb
+            </a>
+            {% endif %}
+            <a href="{{ url_for('movies') }}" class="btn btn-dark-custom">
+              <i class="fa-solid fa-arrow-left"></i> Back to Top 250
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

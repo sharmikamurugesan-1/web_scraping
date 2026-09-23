@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+<style>
+  .tech-badge-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  .tech-badge-item i {
+    color: var(--imdb-gold);
+    font-size: 1rem;
+  }
+  .feature-icon-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: rgba(245, 197, 24, 0.1);
+    border: 1px solid rgba(245, 197, 24, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+    color: var(--imdb-gold);
+    margin-bottom: 1rem;
+  }
+  .api-badge {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.25rem 0.55rem;
+    border-radius: 4px;
+  }
+  .api-get {
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.4);
+  }
+  .api-post {
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.4);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <!-- Hero Section -->
+  <div class="col-12">
+    <div class="card-cinerank p-4 p-md-5" style="background: linear-gradient(135deg, rgba(20, 22, 34, 0.95), rgba(30, 33, 50, 0.85)); border-color: rgba(245, 197, 24, 0.3);">
+      <div class="row align-items-center">
+        <div class="col-lg-8">
+          <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill mb-3" style="background: rgba(245,197,24,0.1); border: 1px solid rgba(245,197,24,0.25);">
+            <i class="fa-solid fa-graduation-cap" style="color: var(--imdb-gold);"></i>
+            <span style="font-size: 11.5px; font-weight: 700; color: var(--imdb-gold); letter-spacing: 0.08em; text-transform: uppercase;">Portfolio Project Architecture</span>
+          </div>
+          <h2 class="hero-title mb-2">About Cine<span>Rank</span></h2>
+          <p class="hero-meta mb-3" style="font-size: 1.05rem; max-width: 680px; line-height: 1.6;">
+            A production-ready, full-stack IMDb Movie Intelligence Web Application and Selenium automation engine. CineRank scrapes, processes, stores, and visualizes the world-renowned IMDb Top 250 rated movies in real-time.
+          </p>
+          <div class="d-flex flex-wrap gap-2 pt-2">
+            <span class="tech-badge-item"><i class="fa-brands fa-python"></i> Python 3.10+</span>
+            <span class="tech-badge-item"><i class="fa-solid fa-server"></i> Flask 3.0</span>
+            <span class="tech-badge-item"><i class="fa-solid fa-spider"></i> Selenium 4</span>
+            <span class="tech-badge-item"><i class="fa-solid fa-table"></i> Pandas</span>
+            <span class="tech-badge-item"><i class="fa-brands fa-chrome"></i> Chrome Driver</span>
+            <span class="tech-badge-item"><i class="fa-solid fa-chart-line"></i> Chart.js 4</span>
+            <span class="tech-badge-item"><i class="fa-brands fa-bootstrap"></i> Bootstrap 5</span>
+          </div>
+        </div>
+        <div class="col-lg-4 text-center mt-4 mt-lg-0">
+          <div class="p-4 rounded-4" style="background: rgba(11, 12, 16, 0.7); border: 1px solid rgba(255,255,255,0.08);">
+            <div class="display-3 mb-2">🎬</div>
+            <h5 class="fw-bold text-white mb-1">CineRank v2.0</h5>
+            <p class="text-secondary small mb-3">Selenium Scraping & Analytics Suite</p>
+            <div class="d-grid gap-2">
+              <a href="{{ url_for('scraper_page') }}" class="btn-cinerank-gold btn-sm py-2">
+                <i class="fa-solid fa-play me-1"></i> Launch Scraper Console
+              </a>
+              <a href="{{ url_for('download_csv') }}" class="btn-cinerank-outline btn-sm py-2">
+                <i class="fa-solid fa-download me-1"></i> Export Dataset (.CSV)
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Key Pillars / Feature Breakdown -->
+  <div class="col-12">
+    <h4 class="fw-bold text-white mb-3"><i class="fa-solid fa-layer-group me-2" style="color: var(--imdb-gold);"></i>System Pillars & Capabilities</h4>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card-cinerank p-4 h-100">
+      <div class="feature-icon-circle">
+        <i class="fa-solid fa-robot"></i>
+      </div>
+      <h5 class="fw-bold text-white mb-2">Headless Automation Engine</h5>
+      <p class="text-secondary small mb-3">
+        Built on Selenium 4 with modern Chrome headless support (<code>--headless=new</code>). Features anti-bot fingerprint masking, defensive explicit waits via <code>WebDriverWait</code>, dynamic DOM scrolling, and graceful timeout handling.
+      </p>
+      <ul class="text-secondary small ps-3 mb-0">
+        <li>Thread-safe asynchronous background jobs</li>
+        <li>Real-time progress polling (800ms intervals)</li>
+        <li>Instant cancellation token support</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card-cinerank p-4 h-100">
+      <div class="feature-icon-circle">
+        <i class="fa-solid fa-database"></i>
+      </div>
+      <h5 class="fw-bold text-white mb-2">Data Processing & Persistence</h5>
+      <p class="text-secondary small mb-3">
+        Uses high-performance Pandas DataFrames for data sanitization, type coercion (ratings to float, years to int), deduplication, and automated CSV synchronization under <code>data/movies.csv</code>.
+      </p>
+      <ul class="text-secondary small ps-3 mb-0">
+        <li>Curated 250-movie offline demo fallback</li>
+        <li>Zero downtime on dataset reset or scrape</li>
+        <li>One-click RFC 4180 standard CSV export</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card-cinerank p-4 h-100">
+      <div class="feature-icon-circle">
+        <i class="fa-solid fa-chart-column"></i>
+      </div>
+      <h5 class="fw-bold text-white mb-2">Cinematic Intelligence UI</h5>
+      <p class="text-secondary small mb-3">
+        Engineered with a luxury dark cinematic aesthetic. Features interactive multi-column sorting, live instant search with debouncing, card vs table toggle, and 4 specialized Chart.js analytics charts.
+      </p>
+      <ul class="text-secondary small ps-3 mb-0">
+        <li>Gaussian-style rating distribution histogram</li>
+        <li>Decade breakdown & timeline trend analysis</li>
+        <li>Deep-link modals with direct IMDb portal links</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Architecture & Data Flow Diagram -->
+  <div class="col-12">
+    <div class="card-cinerank p-4">
+      <h5 class="fw-bold text-white mb-3"><i class="fa-solid fa-diagram-project me-2" style="color: var(--imdb-gold);"></i>Architecture & Execution Pipeline</h5>
+      <div class="p-3 rounded-3" style="background: rgba(11, 12, 16, 0.85); border: 1px solid rgba(255,255,255,0.06); font-family: monospace; font-size: 0.85rem; color: #a1a1aa; line-height: 1.6;">
+        <div class="text-warning mb-1">[Client Browser] ➔ HTTP Requests / Fetch API</div>
+        <div class="ps-3 mb-1">↳ Flask Web Application (app.py)</div>
+        <div class="ps-5 mb-1">├── Route Handlers: /dashboard, /movies, /analytics, /scraper, /about</div>
+        <div class="ps-5 mb-1">├── Background Threading: threading.Thread(target=scraper.scrape_top_250)</div>
+        <div class="ps-5 mb-1">├── Scraper Engine: Selenium Chrome WebDriver (Headless / Anti-detection flags)</div>
+        <div class="ps-5 mb-1">│   ↳ Parses DOM: Title, Year, Rating, Rank, Poster Image, Movie URL</div>
+        <div class="ps-5 mb-1">├── Storage Engine: Pandas DataFrames ➔ Synced to data/movies.csv</div>
+        <div class="ps-5 mb-1">└── RESTful API Layer: JSON endpoints for live polling, filtering, & stats</div>
+        <div class="text-success mt-1">↳ [UI Layer] Bootstrap 5 + Vanilla JS + Chart.js rendering interactive graphs & tables</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REST API Documentation -->
+  <div class="col-12">
+    <div class="card-cinerank p-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold text-white mb-0"><i class="fa-solid fa-network-wired me-2" style="color: var(--imdb-gold);"></i>RESTful API Specifications</h5>
+        <span class="badge bg-secondary">JSON Responses</span>
+      </div>
+      <div class="table-responsive">
+        <table class="table-cinerank mb-0">
+          <thead>
+            <tr>
+              <th style="width: 100px;">Method</th>
+              <th style="width: 220px;">Endpoint</th>
+              <th>Description</th>
+              <th style="width: 160px;">Response Format</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="api-badge api-get">GET</span></td>
+              <td><code>/api/stats</code></td>
+              <td>Summary statistics (total movies, average rating, highest rated, last updated time).</td>
+              <td><code>{ "success": true, "stats": {...} }</code></td>
+            </tr>
+            <tr>
+              <td><span class="api-badge api-get">GET</span></td>
+              <td><code>/api/movies</code></td>
+              <td>Query movies with support for <code>q</code>, <code>min_rating</code>, <code>max_rating</code>, <code>year_from</code>, <code>year_to</code>, <code>sort_by</code>, <code>order</code>, <code>page</code>, and <code>per_page</code>.</td>
+              <td><code>{ "movies": [...], "pagination": {...} }</code></td>
+            </tr>
+            <tr>
+              <td><span class="api-badge api-get">GET</span></td>
+              <td><code>/api/movies/&lt;rank&gt;</code></td>
+              <td>Detailed attributes for a specific movie by rank (1 to 250).</td>
+              <td><code>{ "success": true, "movie": {...} }</code></td>
+            </tr>
+            <tr>
+              <td><span class="api-badge api-get">GET</span></td>
+              <td><code>/api/analytics</code></td>
+              <td>Aggregated dataset metrics for charts (rating distribution, decade counts, top movies, scatter coordinates).</td>
+              <td><code>{ "rating_distribution": {...}, "decades": {...} }</code></td>
+            </tr>
+            <tr>
+              <td><span class="api-badge api-post">POST</span></td>
+              <td><code>/api/scrape</code></td>
+              <td>Triggers non-blocking Selenium scraper thread. Accepts <code>{"headless": true}</code>.</td>
+              <td><code>{ "status": "started", "message": "..." }</code></td>
+            </tr>
+            <tr>
+              <td><span class="api-badge api-get">GET</span></td>
+              <td><code>/api/scrape/status</code></td>
+              <td>Poll current scraper execution state, percentage progress, current title, and terminal logs.</td>
+              <td><code>{ "status": "running", "progress": 45, ... }</code></td>
+            </tr>
+            <tr>
+              <td><span class="api-badge api-post">POST</span></td>
+              <td><code>/api/scrape/stop</code></td>
+              <td>Cancels any currently running scraper process and releases WebDriver memory.</td>
+              <td><code>{ "status": "cancelling", "message": "..." }</code></td>
+            </tr>
+            <tr>
+              <td><span class="api-badge api-post">POST</span></td>
+              <td><code>/api/clear</code></td>
+              <td>Clears active scraped dataset or resets to curated demo dataset.</td>
+              <td><code>{ "status": "reset", "message": "..." }</code></td>
+            </tr>
+            <tr>
+              <td><span class="api-badge api-get">GET</span></td>
+              <td><code>/api/download</code></td>
+              <td>Direct download of <code>data/movies.csv</code> as an attachment.</td>
+              <td><code>Content-Type: text/csv</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Local Setup & Run Guide -->
+  <div class="col-12">
+    <div class="card-cinerank p-4">
+      <h5 class="fw-bold text-white mb-3"><i class="fa-solid fa-terminal me-2" style="color: var(--imdb-gold);"></i>Running Locally in 3 Steps</h5>
+      <div class="row g-3">
+        <div class="col-md-4">
+          <div class="p-3 rounded-3 h-100" style="background: rgba(11, 12, 16, 0.7); border: 1px solid rgba(255,255,255,0.06);">
+            <div class="fw-bold text-white mb-1">1. Environment Setup</div>
+            <p class="text-secondary small mb-2">Create virtual environment & install dependencies:</p>
+            <pre class="p-2 rounded bg-black text-warning small mb-0"><code>python -m venv venv
+venv\Scripts\activate
+pip install -r requirements.txt</code></pre>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="p-3 rounded-3 h-100" style="background: rgba(11, 12, 16, 0.7); border: 1px solid rgba(255,255,255,0.06);">
+            <div class="fw-bold text-white mb-1">2. Run the Server</div>
+            <p class="text-secondary small mb-2">Launch the Flask application:</p>
+            <pre class="p-2 rounded bg-black text-warning small mb-0"><code>python app.py</code></pre>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="p-3 rounded-3 h-100" style="background: rgba(11, 12, 16, 0.7); border: 1px solid rgba(255,255,255,0.06);">
+            <div class="fw-bold text-white mb-1">3. Open Browser</div>
+            <p class="text-secondary small mb-2">Navigate to the dashboard locally:</p>
+            <pre class="p-2 rounded bg-black text-success small mb-0"><code>http://127.0.0.1:5000</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

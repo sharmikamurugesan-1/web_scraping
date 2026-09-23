@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Page Title & Toolbar -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+  <div>
+    <h2 class="fw-bold text-white mb-1">IMDb Top 250 Movies</h2>
+    <p class="text-secondary mb-0" style="font-size: 13.5px;">
+      Explore the greatest cinematic masterpieces in history with live filtering, multi-column sorting, and full search.
+    </p>
+  </div>
+  <div class="d-flex align-items-center gap-2">
+    <!-- View Mode Switcher -->
+    <div class="btn-group" role="group">
+      <button type="button" class="btn btn-dark-custom active" id="viewModeGridBtn" title="Grid View">
+        <i class="fa-solid fa-table-cells-large"></i>
+      </button>
+      <button type="button" class="btn btn-dark-custom" id="viewModeTableBtn" title="Table View">
+        <i class="fa-solid fa-list"></i>
+      </button>
+    </div>
+
+    <!-- CSV Export Button -->
+    <a href="{{ url_for('download_csv') }}" class="btn btn-gold">
+      <i class="fa-solid fa-file-csv"></i> Export CSV
+    </a>
+  </div>
+</div>
+
+<!-- ==========================================
+     SEARCH & FILTER TOOLBAR CARD
+     ========================================== -->
+<div class="card bg-dark border-secondary border-opacity-25 rounded-3 mb-4 p-3 shadow-sm" style="background-color: var(--bg-card) !important;">
+  <div class="row g-3 align-items-center">
+    <!-- 1. Search Box -->
+    <div class="col-12 col-lg-4">
+      <div class="input-group">
+        <span class="input-group-text bg-transparent border-secondary border-opacity-25 text-secondary">
+          <i class="fa-solid fa-magnifying-glass text-gold"></i>
+        </span>
+        <input type="text" id="movieSearchInput" class="form-control form-control-cinematic" placeholder="Search by title (e.g., Godfather, Matrix)...">
+        <button class="btn btn-dark-custom" type="button" id="clearSearchBtn" title="Clear Search">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- 2. Rating Filter -->
+    <div class="col-6 col-md-3 col-lg-2">
+      <select id="ratingFilterSelect" class="form-select form-select-cinematic">
+        <option value="">All Ratings</option>
+        <option value="9.0">9.0+ Super Classics</option>
+        <option value="8.5">8.5+ Masterpieces</option>
+        <option value="8.0">8.0+ Great Films</option>
+        <option value="7.5">7.5+ Good Films</option>
+      </select>
+    </div>
+
+    <!-- 3. Decade / Year Filter -->
+    <div class="col-6 col-md-3 col-lg-2">
+      <select id="yearFilterSelect" class="form-select form-select-cinematic">
+        <option value="">All Eras / Years</option>
+        <option value="2020-2029">2020s (Modern Era)</option>
+        <option value="2010-2019">2010s</option>
+        <option value="2000-2009">2000s</option>
+        <option value="1990-1999">1990s (Golden Era)</option>
+        <option value="1980-1989">1980s</option>
+        <option value="1970-1979">1970s</option>
+        <option value="1900-1969">Pre-1970 Vintage Classics</option>
+      </select>
+    </div>
+
+    <!-- 4. Rank Range Filter -->
+    <div class="col-6 col-md-3 col-lg-2">
+      <select id="rankFilterSelect" class="form-select form-select-cinematic">
+        <option value="">All Ranks (1–250)</option>
+        <option value="1-50">Top 50 (#1 – #50)</option>
+        <option value="51-100">Ranks #51 – #100</option>
+        <option value="101-150">Ranks #101 – #150</option>
+        <option value="151-200">Ranks #151 – #200</option>
+        <option value="201-250">Ranks #201 – #250</option>
+      </select>
+    </div>
+
+    <!-- 5. Sort Dropdown -->
+    <div class="col-6 col-md-3 col-lg-2">
+      <select id="movieSortSelect" class="form-select form-select-cinematic">
+        <option value="rank_asc">Rank: 1 → 250 (Default)</option>
+        <option value="rank_desc">Rank: 250 → 1</option>
+        <option value="rating_desc">Rating: Highest First</option>
+        <option value="rating_asc">Rating: Lowest First</option>
+        <option value="year_desc">Year: Newest First</option>
+        <option value="year_asc">Year: Oldest First</option>
+        <option value="title_asc">Title: A → Z</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Filter Summary & Reset Bar -->
+  <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top border-secondary border-opacity-25" style="font-size: 13px;">
+    <div class="text-secondary">
+      <strong class="text-gold" id="showingCountDisplay">Showing 0 of 250 movies</strong>
+    </div>
+    <div>
+      <button class="btn btn-sm btn-link text-secondary text-decoration-none p-0" id="resetFiltersBtn">
+        <i class="fa-solid fa-rotate-left"></i> Reset All Filters
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ==========================================
+     MOVIES CONTAINER (GRID & TABLE)
+     ========================================== -->
+<!-- Loading Skeleton Spinner -->
+<div id="moviesLoadingSpinner" class="text-center py-5 d-none">
+  <div class="spinner-border text-warning" role="status" style="width: 3rem; height: 3rem;">
+    <span class="visually-hidden">Loading Top 250 movies...</span>
+  </div>
+  <div class="text-secondary mt-3">Filtering and loading movie records...</div>
+</div>
+
+<!-- Empty State Message -->
+<div id="moviesEmptyState" class="text-center py-5 d-none">
+  <div style="font-size: 48px; color: var(--text-muted); margin-bottom: 12px;">🎬</div>
+  <h4 class="text-white fw-bold">No Movies Match Your Criteria</h4>
+  <p class="text-secondary">Try clearing your search query or broadening your rating and year filters.</p>
+  <button class="btn btn-gold btn-sm mt-2" onclick="document.getElementById('resetFiltersBtn').click()">
+    Reset Filters
+  </button>
+</div>
+
+<!-- 1. Grid View Container -->
+<div id="moviesGridView" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-6 g-3 mb-4">
+  <!-- Dynamically injected via movies.js -->
+</div>
+
+<!-- 2. Table View Container -->
+<div id="moviesTableView" class="cinerank-table-card mb-4 d-none">
+  <div class="table-responsive">
+    <table class="table table-dark-custom align-middle">
+      <thead>
+        <tr>
+          <th style="width: 70px;">Rank</th>
+          <th>Movie</th>
+          <th style="width: 100px;">Year</th>
+          <th style="width: 140px;">IMDb Rating</th>
+          <th style="width: 120px;" class="text-end">Action</th>
+        </tr>
+      </thead>
+      <tbody id="moviesTableBody">
+        <!-- Dynamically injected via movies.js -->
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ==========================================
+     PAGINATION BAR
+     ========================================== -->
+<div class="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3 py-3 border-top border-secondary border-opacity-25">
+  <div class="d-flex align-items-center gap-2" style="font-size: 13px; color: var(--text-secondary);">
+    <span>Per page:</span>
+    <select id="itemsPerPageSelect" class="form-select form-select-sm form-select-cinematic" style="width: auto;">
+      <option value="12">12</option>
+      <option value="24" selected>24</option>
+      <option value="48">48</option>
+      <option value="100">100</option>
+      <option value="250">All 250</option>
+    </select>
+  </div>
+
+  <nav aria-label="Movies pagination">
+    <ul class="pagination pagination-sm mb-0 gap-1" id="paginationControls">
+      <!-- Injected dynamically -->
+    </ul>
+  </nav>
+</div>
+
+<!-- ==========================================
+     INTERACTIVE MOVIE DETAILS MODAL
+     ========================================== -->
+<div class="modal fade" id="movieDetailsModal" tabindex="-1" aria-labelledby="movieModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content modal-content-cinematic">
+      <div class="modal-header modal-header-cinematic">
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-warning text-dark fw-bold px-2 py-1" id="modalMovieRank">Rank #1</span>
+          <h5 class="modal-title fw-bold text-white mb-0" id="modalMovieTitle">Movie Title</h5>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body p-4">
+        <div class="row g-4 align-items-center">
+          <div class="col-12 col-md-4 text-center">
+              <img id="modalMoviePoster" src="" alt="Movie Poster" class="img-fluid w-100" style="min-height: 260px; object-fit: cover;" referrerpolicy="no-referrer">
+          </div>
+          <div class="col-12 col-md-8">
+            <div class="d-flex align-items-center gap-3 mb-3">
+              <div class="fs-4 fw-bold text-gold d-flex align-items-center gap-2">
+                <i class="fa-solid fa-star"></i> <span id="modalMovieRating">9.3</span> <span class="text-secondary fs-6 fw-normal">/ 10</span>
+              </div>
+              <span class="text-secondary">•</span>
+              <div class="fs-5 text-white" id="modalMovieYear">1994</div>
+            </div>
+
+            <div class="p-3 rounded-3 mb-3" style="background-color: var(--bg-input);">
+              <div class="text-secondary small text-uppercase fw-bold mb-1">IMDb Top 250 Placement</div>
+              <div class="text-white" id="modalPlacementDescription">
+                Recognized globally among the 250 highest rated films of all time based on verified votes from millions of IMDb users.
+              </div>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 mt-4">
+              <a id="modalImdbExternalLink" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-gold">
+                <i class="fa-solid fa-arrow-up-right-from-square"></i> Open on IMDb.com
+              </a>
+              <button type="button" class="btn btn-dark-custom" data-bs-dismiss="modal">
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/movies.js') }}"></script>
+{% endblock %}
